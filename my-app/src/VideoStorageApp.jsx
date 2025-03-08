@@ -46,18 +46,6 @@ const VideoStorageApp = () => {
     }
   };
 
-  const addImage = async () => {
-    const url = prompt("Entre l'URL de l'image :");
-    if (url) {
-      const { data, error } = await supabase.from("images").insert([{ url }]).select();
-      if (error) {
-        console.error("Erreur lors de l'ajout de l'image :", error);
-      } else {
-        setImages([...images, ...data]);
-      }
-    }
-  };
-
   const removeVideo = async (id) => {
     const { error } = await supabase.from("videos").delete().match({ id });
     if (error) {
@@ -67,20 +55,14 @@ const VideoStorageApp = () => {
     }
   };
 
-  const removeImage = async (id) => {
-    const { error } = await supabase.from("images").delete().match({ id });
-    if (error) {
-      console.error("Erreur lors de la suppression de l'image :", error);
-    } else {
-      setImages(images.filter((image) => image.id !== id));
-    }
-  };
-
+  const isOneUpload = (url) => url.includes("oneupload.net");
   const isSibnet = (url) => url.includes("sibnet.ru");
   const isYouTube = (url) => url.includes("youtube.com") || url.includes("youtu.be");
 
   const VideoComponent = ({ url }) => {
-    if (isSibnet(url)) {
+    if (isOneUpload(url)) {
+      return <iframe src={url} width="600" height="340" allowFullScreen></iframe>;
+    } else if (isSibnet(url)) {
       return <iframe src={url} width="600" height="340" allowFullScreen></iframe>;
     } else if (isYouTube(url)) {
       const videoId = new URL(url).searchParams.get("v");
@@ -121,9 +103,6 @@ const VideoStorageApp = () => {
             {images.map((image) => (
               <div key={image.id} style={{ margin: "20px", textAlign: "center" }}>
                 <img src={image.url} alt="Stored" width="400" />
-                <button onClick={() => removeImage(image.id)} style={{ marginTop: "10px", backgroundColor: "red", color: "white", border: "none", padding: "5px 10px", cursor: "pointer" }}>
-                  🗑 Supprimer
-                </button>
               </div>
             ))}
           </div>
